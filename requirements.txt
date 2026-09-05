@@ -1,0 +1,5 @@
+PyQt6>=6.6.0
+uiautomation>=2.0.29
+pynput>=1.8.0
+pywin32>=306
+requests>=2.31.0
