@@ -1,5 +1,6 @@
 import sys
 import time
+import random
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtSignal, QObject, QPoint
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
@@ -7,6 +8,57 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QColor, QFont, QCursor
 from speech import speak
+
+ANNOUNCEMENT_QUOTES = [
+    {
+        "zh": "开始学习吧!",
+        "en": "Let's start learning!",
+        "kws": [
+            {"word": "start", "meaning": "开始"},
+            {"word": "learning", "meaning": "学习"}
+        ]
+    },
+    {
+        "zh": "今天也要努力上哦!",
+        "en": "Give it your best shot today!",
+        "kws": [
+            {"word": "best shot", "meaning": "全力以赴"},
+            {"word": "keep trying", "meaning": "坚持努力"}
+        ]
+    },
+    {
+        "zh": "你说过的，要改变世界",
+        "en": "You once said you would change the world.",
+        "kws": [
+            {"word": "change the world", "meaning": "改变世界"},
+            {"word": "once said", "meaning": "曾经说过"}
+        ]
+    },
+    {
+        "zh": "关注B站的北辰捡垃圾喵",
+        "en": "Follow '北辰捡垃圾喵' on Bilibili!",
+        "kws": [
+            {"word": "follow", "meaning": "关注/订阅"},
+            {"word": "creator", "meaning": "创作者"}
+        ]
+    },
+    {
+        "zh": "我相信你只要,做什么都可以",
+        "en": "I believe you can accomplish anything you set your mind to.",
+        "kws": [
+            {"word": "believe", "meaning": "相信"},
+            {"word": "accomplish", "meaning": "做到/达成"}
+        ]
+    },
+    {
+        "zh": "勇敢去做",
+        "en": "Be brave and just go for it!",
+        "kws": [
+            {"word": "brave", "meaning": "勇敢的"},
+            {"word": "go for it", "meaning": "放手去做"}
+        ]
+    }
+]
 
 class Communicator(QObject):
     update_signal = pyqtSignal(dict)
@@ -76,6 +128,8 @@ class LearningCardHUD(QWidget):
         self.current_english = ""
         self.last_update_time = time.time()
         self.drag_position = QPoint()
+        self.has_user_input = False
+        self.current_quote_idx = -1
         
         self.comm = Communicator()
         self.comm.update_signal.connect(self._apply_card_data)
@@ -84,6 +138,7 @@ class LearningCardHUD(QWidget):
         self._build_apple_ui()
         self._setup_animations()
         self.apply_theme()
+        self._start_announcement_rotation()
 
     def _init_window(self):
         self.setWindowFlags(
@@ -199,6 +254,23 @@ class LearningCardHUD(QWidget):
         self.content_layout.setContentsMargins(0, 2, 0, 0)
         self.content_layout.setSpacing(8)
 
+        # Announcement Banner (Apple capsule style, visible before first user input)
+        self.announcement_banner = QFrame(self)
+        self.announcement_banner.setObjectName("AnnouncementBanner")
+        self.ann_layout = QHBoxLayout(self.announcement_banner)
+        self.ann_layout.setContentsMargins(8, 3, 8, 3)
+        self.ann_layout.setSpacing(6)
+
+        self.ann_icon = QLabel("📢", self)
+        self.ann_icon.setStyleSheet("background: transparent; font-size: 11px;")
+        self.ann_layout.addWidget(self.ann_icon)
+
+        self.ann_label = QLabel("公告 · 今日启航寄语", self)
+        self.ann_label.setStyleSheet("background: transparent;")
+        self.ann_layout.addWidget(self.ann_label, stretch=1)
+
+        self.content_layout.addWidget(self.announcement_banner)
+
         # Chinese Original
         self.zh_label = QLabel("在任意软件中打字，此处将同步呈现地道英译与重点词", self)
         self.zh_label.setWordWrap(True)
@@ -311,6 +383,24 @@ class LearningCardHUD(QWidget):
                 }
             """)
             self.sep.setStyleSheet("background-color: rgba(255, 255, 255, 0.08); max-height: 1px;")
+            if hasattr(self, 'announcement_banner'):
+                self.announcement_banner.setStyleSheet("""
+                    QFrame#AnnouncementBanner {
+                        background: rgba(255, 159, 10, 0.14);
+                        border: 1px solid rgba(255, 159, 10, 0.32);
+                        border-radius: 8px;
+                    }
+                """)
+            if hasattr(self, 'ann_label'):
+                self.ann_label.setStyleSheet("""
+                    QLabel {
+                        color: #FFB340;
+                        font-family: "Segoe UI", "Microsoft YaHei UI";
+                        font-size: 11px;
+                        font-weight: 600;
+                        background: transparent;
+                    }
+                """)
             self.zh_label.setStyleSheet("""
                 QLabel {
                     color: #98989D;
@@ -430,6 +520,24 @@ class LearningCardHUD(QWidget):
                 }
             """)
             self.sep.setStyleSheet("background-color: rgba(0, 0, 0, 0.08); max-height: 1px;")
+            if hasattr(self, 'announcement_banner'):
+                self.announcement_banner.setStyleSheet("""
+                    QFrame#AnnouncementBanner {
+                        background: rgba(255, 149, 0, 0.10);
+                        border: 1px solid rgba(255, 149, 0, 0.28);
+                        border-radius: 8px;
+                    }
+                """)
+            if hasattr(self, 'ann_label'):
+                self.ann_label.setStyleSheet("""
+                    QLabel {
+                        color: #D97706;
+                        font-family: "Segoe UI", "Microsoft YaHei UI";
+                        font-size: 11px;
+                        font-weight: 600;
+                        background: transparent;
+                    }
+                """)
             self.zh_label.setStyleSheet("""
                 QLabel {
                     color: #6E6E73;
@@ -584,9 +692,51 @@ class LearningCardHUD(QWidget):
             self.sep.show()
             self.capsule_audio.show()
             self.btn_theme.show()
+            if not self.has_user_input and hasattr(self, 'announcement_banner'):
+                self.announcement_banner.show()
             self.is_collapsed = False
             self.apply_theme()
             self.adjustSize()
+
+    def _start_announcement_rotation(self):
+        """Rotate random motivational announcement quotes until first user input."""
+        self._rotate_random_quote()
+        self.quote_timer = QTimer(self)
+        self.quote_timer.setInterval(3800)
+        self.quote_timer.timeout.connect(self._rotate_random_quote)
+        self.quote_timer.start()
+
+    def _rotate_random_quote(self):
+        if self.has_user_input:
+            if hasattr(self, 'quote_timer'):
+                self.quote_timer.stop()
+            return
+
+        candidates = [i for i in range(len(ANNOUNCEMENT_QUOTES)) if i != self.current_quote_idx]
+        self.current_quote_idx = random.choice(candidates)
+        quote = ANNOUNCEMENT_QUOTES[self.current_quote_idx]
+        self._display_quote(quote)
+
+    def _display_quote(self, quote):
+        if self.has_user_input:
+            return
+        self.ann_label.setText(f"公告 · {quote['zh']}")
+        self.zh_label.setText(quote['zh'])
+        self.en_label.setText(quote['en'])
+        self.current_english = quote['en']
+
+        kws = quote.get("kws", [])
+        for i in range(len(self.chip_labels)):
+            if i < len(kws):
+                item = kws[i]
+                w = item.get("word", "")
+                m = item.get("meaning", "")
+                self.chip_labels[i].setText(f"{w} · {m}")
+                self.chip_labels[i].show()
+            else:
+                self.chip_labels[i].hide()
+
+        self.adjustSize()
 
     def toggle_auto_speak(self):
         self.auto_speak = not self.auto_speak
@@ -645,6 +795,14 @@ class LearningCardHUD(QWidget):
     def _apply_card_data(self, data: dict):
         if not data:
             return
+
+        # Permanently stop and hide announcement quotes once user starts typing
+        if not self.has_user_input:
+            self.has_user_input = True
+            if hasattr(self, 'quote_timer') and self.quote_timer.isActive():
+                self.quote_timer.stop()
+            if hasattr(self, 'announcement_banner'):
+                self.announcement_banner.hide()
 
         self.last_update_time = time.time()
         self.setWindowOpacity(0.98)
