@@ -39,9 +39,14 @@ def main():
     def on_sentence_detected(zh_text: str):
         nonlocal last_processed
         zh_text = zh_text.strip()
-        if not zh_text or zh_text == last_processed or len(zh_text) < 2:
+        if not zh_text or len(zh_text) < 2:
+            return
+        if zh_text == last_processed:
             return
         last_processed = zh_text
+        
+        # Immediately display user's Chinese text and stop quote rotation!
+        hud.set_pending_input(zh_text)
         
         # Analyze in background to keep UI buttery smooth
         def _worker():

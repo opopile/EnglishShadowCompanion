@@ -62,6 +62,7 @@ ANNOUNCEMENT_QUOTES = [
 
 class Communicator(QObject):
     update_signal = pyqtSignal(dict)
+    pending_signal = pyqtSignal(str)
 
 class TrafficLightButton(QPushButton):
     def __init__(self, color_normal, color_hover, symbol, tooltip_text="", parent=None):
@@ -133,6 +134,7 @@ class LearningCardHUD(QWidget):
         
         self.comm = Communicator()
         self.comm.update_signal.connect(self._apply_card_data)
+        self.comm.pending_signal.connect(self._on_pending_input)
 
         self._init_window()
         self._build_apple_ui()
@@ -254,25 +256,8 @@ class LearningCardHUD(QWidget):
         self.content_layout.setContentsMargins(0, 2, 0, 0)
         self.content_layout.setSpacing(8)
 
-        # Announcement Banner (Apple capsule style, visible before first user input)
-        self.announcement_banner = QFrame(self)
-        self.announcement_banner.setObjectName("AnnouncementBanner")
-        self.ann_layout = QHBoxLayout(self.announcement_banner)
-        self.ann_layout.setContentsMargins(8, 3, 8, 3)
-        self.ann_layout.setSpacing(6)
-
-        self.ann_icon = QLabel("📢", self)
-        self.ann_icon.setStyleSheet("background: transparent; font-size: 11px;")
-        self.ann_layout.addWidget(self.ann_icon)
-
-        self.ann_label = QLabel("公告 · 今日启航寄语", self)
-        self.ann_label.setStyleSheet("background: transparent;")
-        self.ann_layout.addWidget(self.ann_label, stretch=1)
-
-        self.content_layout.addWidget(self.announcement_banner)
-
         # Chinese Original
-        self.zh_label = QLabel("在任意软件中打字，此处将同步呈现地道英译与重点词", self)
+        self.zh_label = QLabel("开始学习吧!", self)
         self.zh_label.setWordWrap(True)
         self.content_layout.addWidget(self.zh_label)
 
@@ -383,24 +368,6 @@ class LearningCardHUD(QWidget):
                 }
             """)
             self.sep.setStyleSheet("background-color: rgba(255, 255, 255, 0.08); max-height: 1px;")
-            if hasattr(self, 'announcement_banner'):
-                self.announcement_banner.setStyleSheet("""
-                    QFrame#AnnouncementBanner {
-                        background: rgba(255, 159, 10, 0.14);
-                        border: 1px solid rgba(255, 159, 10, 0.32);
-                        border-radius: 8px;
-                    }
-                """)
-            if hasattr(self, 'ann_label'):
-                self.ann_label.setStyleSheet("""
-                    QLabel {
-                        color: #FFB340;
-                        font-family: "Segoe UI", "Microsoft YaHei UI";
-                        font-size: 11px;
-                        font-weight: 600;
-                        background: transparent;
-                    }
-                """)
             self.zh_label.setStyleSheet("""
                 QLabel {
                     color: #98989D;
@@ -520,24 +487,6 @@ class LearningCardHUD(QWidget):
                 }
             """)
             self.sep.setStyleSheet("background-color: rgba(0, 0, 0, 0.08); max-height: 1px;")
-            if hasattr(self, 'announcement_banner'):
-                self.announcement_banner.setStyleSheet("""
-                    QFrame#AnnouncementBanner {
-                        background: rgba(255, 149, 0, 0.10);
-                        border: 1px solid rgba(255, 149, 0, 0.28);
-                        border-radius: 8px;
-                    }
-                """)
-            if hasattr(self, 'ann_label'):
-                self.ann_label.setStyleSheet("""
-                    QLabel {
-                        color: #D97706;
-                        font-family: "Segoe UI", "Microsoft YaHei UI";
-                        font-size: 11px;
-                        font-weight: 600;
-                        background: transparent;
-                    }
-                """)
             self.zh_label.setStyleSheet("""
                 QLabel {
                     color: #6E6E73;
@@ -692,17 +641,34 @@ class LearningCardHUD(QWidget):
             self.sep.show()
             self.capsule_audio.show()
             self.btn_theme.show()
-            if not self.has_user_input and hasattr(self, 'announcement_banner'):
-                self.announcement_banner.show()
             self.is_collapsed = False
             self.apply_theme()
             self.adjustSize()
+
+    def set_pending_input(self, zh_text: str):
+        self.comm.pending_signal.emit(zh_text)
+
+    def _on_pending_input(self, zh_text: str):
+        # Stop quote rotation immediately upon any user input
+        self.has_user_input = True
+        if hasattr(self, 'quote_timer') and self.quote_timer.isActive():
+            self.quote_timer.stop()
+        self.last_update_time = time.time()
+        self.setWindowOpacity(0.98)
+        if self.is_collapsed:
+            self.toggle_collapse()
+        self.zh_label.setText(zh_text)
+        self.en_label.setText("正在分析地道英译...")
+        self.current_english = ""
+        for chip in self.chip_labels:
+            chip.hide()
+        self.adjustSize()
 
     def _start_announcement_rotation(self):
         """Rotate random motivational announcement quotes until first user input."""
         self._rotate_random_quote()
         self.quote_timer = QTimer(self)
-        self.quote_timer.setInterval(3800)
+        self.quote_timer.setInterval(5000)
         self.quote_timer.timeout.connect(self._rotate_random_quote)
         self.quote_timer.start()
 
@@ -720,7 +686,6 @@ class LearningCardHUD(QWidget):
     def _display_quote(self, quote):
         if self.has_user_input:
             return
-        self.ann_label.setText(f"公告 · {quote['zh']}")
         self.zh_label.setText(quote['zh'])
         self.en_label.setText(quote['en'])
         self.current_english = quote['en']
@@ -796,13 +761,10 @@ class LearningCardHUD(QWidget):
         if not data:
             return
 
-        # Permanently stop and hide announcement quotes once user starts typing
-        if not self.has_user_input:
-            self.has_user_input = True
-            if hasattr(self, 'quote_timer') and self.quote_timer.isActive():
-                self.quote_timer.stop()
-            if hasattr(self, 'announcement_banner'):
-                self.announcement_banner.hide()
+        # Permanently stop announcement quotes once user starts typing
+        self.has_user_input = True
+        if hasattr(self, 'quote_timer') and self.quote_timer.isActive():
+            self.quote_timer.stop()
 
         self.last_update_time = time.time()
         self.setWindowOpacity(0.98)
