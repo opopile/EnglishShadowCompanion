@@ -70,6 +70,7 @@ class LearningCardHUD(QWidget):
 
         super().__init__()
         
+        self.is_dark_mode = True
         self.is_collapsed = False
         self.auto_speak = False
         self.current_english = ""
@@ -82,6 +83,7 @@ class LearningCardHUD(QWidget):
         self._init_window()
         self._build_apple_ui()
         self._setup_animations()
+        self.apply_theme()
 
     def _init_window(self):
         self.setWindowFlags(
@@ -105,21 +107,13 @@ class LearningCardHUD(QWidget):
         # Frosted Card Frame
         self.card = QFrame(self)
         self.card.setObjectName("AppleCard")
-        self.card.setStyleSheet("""
-            QFrame#AppleCard {
-                background: rgba(28, 28, 32, 0.94);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 20px;
-            }
-        """)
 
         # Soft Ambient Shadow
-        shadow = QGraphicsDropShadowEffect(self.card)
-        shadow.setBlurRadius(32)
-        shadow.setXOffset(0)
-        shadow.setYOffset(10)
-        shadow.setColor(QColor(0, 0, 0, 160))
-        self.card.setGraphicsEffect(shadow)
+        self.shadow = QGraphicsDropShadowEffect(self.card)
+        self.shadow.setBlurRadius(32)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(10)
+        self.card.setGraphicsEffect(self.shadow)
 
         self.card_layout = QVBoxLayout(self.card)
         self.card_layout.setContentsMargins(18, 14, 18, 16)
@@ -146,14 +140,6 @@ class LearningCardHUD(QWidget):
 
         # Title
         self.title_label = QLabel("英语影子伴侣", self)
-        self.title_label.setStyleSheet("""
-            QLabel {
-                color: #F5F5F7;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 12px;
-                font-weight: 600;
-            }
-        """)
         self.header_layout.addWidget(self.title_label)
 
         # Green Dot Indicator (CSS-styled, immune to missing glyphs)
@@ -188,24 +174,15 @@ class LearningCardHUD(QWidget):
 
         self.header_layout.addStretch()
 
+        # Theme Toggle Button (Light/Dark Switcher)
+        self.btn_theme = QPushButton("☀️ 浅色", self)
+        self.btn_theme.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_theme.clicked.connect(self.toggle_theme)
+        self.header_layout.addWidget(self.btn_theme)
+
         # Audio Toggle Capsule Pill
         self.capsule_audio = QPushButton("自动发音: 关", self)
         self.capsule_audio.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.capsule_audio.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.08);
-                color: #8E8E93;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 10px;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 10px;
-                padding: 2px 8px;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 0.14);
-                color: #FFFFFF;
-            }
-        """)
         self.capsule_audio.clicked.connect(self.toggle_auto_speak)
         self.header_layout.addWidget(self.capsule_audio)
 
@@ -214,7 +191,6 @@ class LearningCardHUD(QWidget):
         # Subtle Separator
         self.sep = QFrame()
         self.sep.setFrameShape(QFrame.Shape.HLine)
-        self.sep.setStyleSheet("background-color: rgba(255, 255, 255, 0.08); max-height: 1px;")
         self.card_layout.addWidget(self.sep)
 
         # ── 2. Content Container ──
@@ -226,14 +202,6 @@ class LearningCardHUD(QWidget):
         # Chinese Original
         self.zh_label = QLabel("在任意软件中打字，此处将同步呈现地道英译与重点词", self)
         self.zh_label.setWordWrap(True)
-        self.zh_label.setStyleSheet("""
-            QLabel {
-                color: #98989D;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 12px;
-                line-height: 1.4;
-            }
-        """)
         self.content_layout.addWidget(self.zh_label)
 
         # English Translation Row
@@ -242,15 +210,6 @@ class LearningCardHUD(QWidget):
 
         self.en_label = QLabel("Type naturally in Chinese to learn authentic English on the fly!", self)
         self.en_label.setWordWrap(True)
-        self.en_label.setStyleSheet("""
-            QLabel {
-                color: #0A84FF;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 15px;
-                font-weight: 600;
-                letter-spacing: -0.2px;
-            }
-        """)
         self.en_row.addWidget(self.en_label, stretch=1)
 
         # Action Buttons
@@ -259,42 +218,11 @@ class LearningCardHUD(QWidget):
 
         self.btn_speak = QPushButton("朗读", self)
         self.btn_speak.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.btn_speak.setStyleSheet("""
-            QPushButton {
-                background: rgba(10, 132, 255, 0.16);
-                color: #0A84FF;
-                border: 1px solid rgba(10, 132, 255, 0.35);
-                border-radius: 11px;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 11px;
-                font-weight: 600;
-                padding: 4px 12px;
-            }
-            QPushButton:hover {
-                background: rgba(10, 132, 255, 0.28);
-                color: #64D2FF;
-            }
-        """)
         self.btn_speak.clicked.connect(self.play_audio)
         self.actions_layout.addWidget(self.btn_speak)
 
         self.btn_copy = QPushButton("复制", self)
         self.btn_copy.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.btn_copy.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.08);
-                color: #C7C7CC;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 11px;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 11px;
-                padding: 4px 12px;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 0.16);
-                color: #FFFFFF;
-            }
-        """)
         self.btn_copy.clicked.connect(self.copy_english)
         self.actions_layout.addWidget(self.btn_copy)
 
@@ -327,23 +255,6 @@ class LearningCardHUD(QWidget):
         for i in range(3):
             btn_chip = QPushButton("", self)
             btn_chip.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-            btn_chip.setStyleSheet("""
-                QPushButton {
-                    background: rgba(255, 255, 255, 0.06);
-                    color: #E5E5EA;
-                    border: 1px solid rgba(255, 255, 255, 0.09);
-                    border-radius: 9px;
-                    font-family: "Segoe UI", "Microsoft YaHei UI";
-                    font-size: 11px;
-                    padding: 4px 9px;
-                    text-align: left;
-                }
-                QPushButton:hover {
-                    background: rgba(255, 255, 255, 0.14);
-                    color: #FFFFFF;
-                    border: 1px solid rgba(255, 255, 255, 0.18);
-                }
-            """)
             btn_chip.clicked.connect(lambda _, b=btn_chip: self._on_chip_clicked(b))
             self.chips_layout.addWidget(btn_chip)
             self.chip_labels.append(btn_chip)
@@ -358,17 +269,255 @@ class LearningCardHUD(QWidget):
 
         # ── 4. Footnote ──
         self.footer_label = QLabel("可任意拖拽 · 连按两次 Ctrl 或按 F8 学习当前句", self)
-        self.footer_label.setStyleSheet("""
-            QLabel {
-                color: #636366;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 10px;
-            }
-        """)
         self.content_layout.addWidget(self.footer_label)
 
         self.card_layout.addWidget(self.content_widget)
         self.master_layout.addWidget(self.card)
+
+    def apply_theme(self):
+        """Apply Apple Dark or Light Liquid Glass theme dynamically."""
+        if self.is_dark_mode:
+            # ── Dark Mode (Apple Dark Liquid Glass) ──
+            self.card.setStyleSheet("""
+                QFrame#AppleCard {
+                    background: rgba(28, 28, 32, 0.94);
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    border-radius: 20px;
+                }
+            """)
+            self.shadow.setColor(QColor(0, 0, 0, 160))
+            self.title_label.setStyleSheet("""
+                QLabel {
+                    color: #F5F5F7;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+            """)
+            self.btn_theme.setText("☀️ 浅色")
+            self.btn_theme.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #8E8E93;
+                    border: 1px solid rgba(255, 255, 255, 0.10);
+                    border-radius: 10px;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 10px;
+                    padding: 2px 8px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.14);
+                    color: #FFFFFF;
+                }
+            """)
+            self.sep.setStyleSheet("background-color: rgba(255, 255, 255, 0.08); max-height: 1px;")
+            self.zh_label.setStyleSheet("""
+                QLabel {
+                    color: #98989D;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 12px;
+                    line-height: 1.4;
+                }
+            """)
+            self.en_label.setStyleSheet("""
+                QLabel {
+                    color: #0A84FF;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 15px;
+                    font-weight: 600;
+                    letter-spacing: -0.2px;
+                }
+            """)
+            self.btn_speak.setStyleSheet("""
+                QPushButton {
+                    background: rgba(10, 132, 255, 0.16);
+                    color: #0A84FF;
+                    border: 1px solid rgba(10, 132, 255, 0.35);
+                    border-radius: 11px;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 11px;
+                    font-weight: 600;
+                    padding: 4px 12px;
+                }
+                QPushButton:hover {
+                    background: rgba(10, 132, 255, 0.28);
+                    color: #64D2FF;
+                }
+            """)
+            self.btn_copy.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #C7C7CC;
+                    border: 1px solid rgba(255, 255, 255, 0.10);
+                    border-radius: 11px;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 11px;
+                    padding: 4px 12px;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.16);
+                    color: #FFFFFF;
+                }
+            """)
+            for chip in self.chip_labels:
+                chip.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.06);
+                        color: #E5E5EA;
+                        border: 1px solid rgba(255, 255, 255, 0.09);
+                        border-radius: 9px;
+                        font-family: "Segoe UI", "Microsoft YaHei UI";
+                        font-size: 11px;
+                        padding: 4px 9px;
+                        text-align: left;
+                    }
+                    QPushButton:hover {
+                        background: rgba(255, 255, 255, 0.14);
+                        color: #FFFFFF;
+                        border: 1px solid rgba(255, 255, 255, 0.18);
+                    }
+                """)
+            self.footer_label.setStyleSheet("""
+                QLabel {
+                    color: #636366;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 10px;
+                }
+            """)
+            if not self.auto_speak:
+                self.capsule_audio.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(255, 255, 255, 0.08);
+                        color: #8E8E93;
+                        border: 1px solid rgba(255, 255, 255, 0.10);
+                        border-radius: 10px;
+                        font-size: 10px;
+                        padding: 2px 8px;
+                    }
+                """)
+        else:
+            # ── Light Mode (Apple Light Liquid Glass) ──
+            self.card.setStyleSheet("""
+                QFrame#AppleCard {
+                    background: rgba(248, 248, 250, 0.96);
+                    border: 1px solid rgba(0, 0, 0, 0.12);
+                    border-radius: 20px;
+                }
+            """)
+            self.shadow.setColor(QColor(0, 0, 0, 70))
+            self.title_label.setStyleSheet("""
+                QLabel {
+                    color: #1D1D1F;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+            """)
+            self.btn_theme.setText("🌙 深色")
+            self.btn_theme.setStyleSheet("""
+                QPushButton {
+                    background: rgba(0, 0, 0, 0.06);
+                    color: #6E6E73;
+                    border: 1px solid rgba(0, 0, 0, 0.09);
+                    border-radius: 10px;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 10px;
+                    padding: 2px 8px;
+                }
+                QPushButton:hover {
+                    background: rgba(0, 0, 0, 0.10);
+                    color: #1D1D1F;
+                }
+            """)
+            self.sep.setStyleSheet("background-color: rgba(0, 0, 0, 0.08); max-height: 1px;")
+            self.zh_label.setStyleSheet("""
+                QLabel {
+                    color: #6E6E73;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 12px;
+                    line-height: 1.4;
+                }
+            """)
+            self.en_label.setStyleSheet("""
+                QLabel {
+                    color: #0071E3;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 15px;
+                    font-weight: 600;
+                    letter-spacing: -0.2px;
+                }
+            """)
+            self.btn_speak.setStyleSheet("""
+                QPushButton {
+                    background: rgba(0, 113, 227, 0.12);
+                    color: #0071E3;
+                    border: 1px solid rgba(0, 113, 227, 0.28);
+                    border-radius: 11px;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 11px;
+                    font-weight: 600;
+                    padding: 4px 12px;
+                }
+                QPushButton:hover {
+                    background: rgba(0, 113, 227, 0.22);
+                    color: #005bb5;
+                }
+            """)
+            self.btn_copy.setStyleSheet("""
+                QPushButton {
+                    background: rgba(0, 0, 0, 0.06);
+                    color: #3A3A3C;
+                    border: 1px solid rgba(0, 0, 0, 0.09);
+                    border-radius: 11px;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 11px;
+                    padding: 4px 12px;
+                }
+                QPushButton:hover {
+                    background: rgba(0, 0, 0, 0.12);
+                    color: #1D1D1F;
+                }
+            """)
+            for chip in self.chip_labels:
+                chip.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(0, 0, 0, 0.04);
+                        color: #1D1D1F;
+                        border: 1px solid rgba(0, 0, 0, 0.08);
+                        border-radius: 9px;
+                        font-family: "Segoe UI", "Microsoft YaHei UI";
+                        font-size: 11px;
+                        padding: 4px 9px;
+                        text-align: left;
+                    }
+                    QPushButton:hover {
+                        background: rgba(0, 0, 0, 0.08);
+                        color: #000000;
+                        border: 1px solid rgba(0, 0, 0, 0.15);
+                    }
+                """)
+            self.footer_label.setStyleSheet("""
+                QLabel {
+                    color: #86868B;
+                    font-family: "Segoe UI", "Microsoft YaHei UI";
+                    font-size: 10px;
+                }
+            """)
+            if not self.auto_speak:
+                self.capsule_audio.setStyleSheet("""
+                    QPushButton {
+                        background: rgba(0, 0, 0, 0.06);
+                        color: #6E6E73;
+                        border: 1px solid rgba(0, 0, 0, 0.09);
+                        border-radius: 10px;
+                        font-size: 10px;
+                        padding: 2px 8px;
+                    }
+                """)
+
+    def toggle_theme(self):
+        self.is_dark_mode = not self.is_dark_mode
+        self.apply_theme()
 
     def _setup_animations(self):
         self.fade_anim = QPropertyAnimation(self, b"windowOpacity")
@@ -418,12 +567,15 @@ class LearningCardHUD(QWidget):
             self.content_widget.hide()
             self.sep.hide()
             self.capsule_audio.hide()
-            self.card.setStyleSheet("""
-                QFrame#AppleCard {
-                    background: rgba(22, 22, 24, 0.94);
-                    border: 1px solid rgba(255, 255, 255, 0.16);
+            self.btn_theme.hide()
+            bg_col = "rgba(22, 22, 24, 0.94)" if self.is_dark_mode else "rgba(240, 240, 242, 0.96)"
+            border_col = "rgba(255, 255, 255, 0.16)" if self.is_dark_mode else "rgba(0, 0, 0, 0.14)"
+            self.card.setStyleSheet(f"""
+                QFrame#AppleCard {{
+                    background: {bg_col};
+                    border: 1px solid {border_col};
                     border-radius: 18px;
-                }
+                }}
             """)
             self.resize(220, 70)
             self.is_collapsed = True
@@ -431,14 +583,9 @@ class LearningCardHUD(QWidget):
             self.content_widget.show()
             self.sep.show()
             self.capsule_audio.show()
-            self.card.setStyleSheet("""
-                QFrame#AppleCard {
-                    background: rgba(28, 28, 32, 0.94);
-                    border: 1px solid rgba(255, 255, 255, 0.12);
-                    border-radius: 20px;
-                }
-            """)
+            self.btn_theme.show()
             self.is_collapsed = False
+            self.apply_theme()
             self.adjustSize()
 
     def toggle_auto_speak(self):
@@ -458,16 +605,7 @@ class LearningCardHUD(QWidget):
             """)
         else:
             self.capsule_audio.setText("自动发音: 关")
-            self.capsule_audio.setStyleSheet("""
-                QPushButton {
-                    background: rgba(255, 255, 255, 0.08);
-                    color: #8E8E93;
-                    border: 1px solid rgba(255, 255, 255, 0.10);
-                    border-radius: 10px;
-                    font-size: 10px;
-                    padding: 2px 8px;
-                }
-            """)
+            self.apply_theme()
 
     def play_audio(self):
         if self.current_english:
@@ -499,21 +637,7 @@ class LearningCardHUD(QWidget):
 
     def _reset_copy_btn(self, orig_txt):
         self.btn_copy.setText(orig_txt)
-        self.btn_copy.setStyleSheet("""
-            QPushButton {
-                background: rgba(255, 255, 255, 0.08);
-                color: #C7C7CC;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 11px;
-                font-family: "Segoe UI", "Microsoft YaHei UI";
-                font-size: 11px;
-                padding: 4px 12px;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 0.16);
-                color: #FFFFFF;
-            }
-        """)
+        self.apply_theme()
 
     def update_card(self, data: dict):
         self.comm.update_signal.emit(data)

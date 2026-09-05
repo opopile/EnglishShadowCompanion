@@ -4,14 +4,40 @@
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/GUI-PyQt6-41CD52?style=flat-square&logo=qt&logoColor=white" />
   <img src="https://img.shields.io/badge/Style-Native_Apple_macOS-000000?style=flat-square&logo=apple&logoColor=white" />
+  <img src="https://img.shields.io/badge/Theme-Dark%20%7C%20Light-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078D6?style=flat-square&logo=windows&logoColor=white" />
 </p>
 
-<p align="center">
-  <b>打字即学英语 · 原生 Apple 质感悬浮 HUD · 零打扰沉浸式双语伴侣</b><br>
-  <i>Learn authentic English on the fly while typing Chinese naturally. Zero friction, native Apple aesthetic, incidental micro-learning.</i>
-</p>
+---
+
+## 📖 关于 / About
+
+> **🇨🇳 中文**：  
+> **打字的时候随手学习英文，在最不影响原有环境的情况下小而美的组件，即装即用，不影响原有输入法。**
+> 
+> **🇬🇧 English**：  
+> **Learn English effortlessly on the fly while typing. An exquisite, lightweight desktop widget that works out of the box without altering your original workflow or interfering with your existing input methods.**
+
+---
+
+## 📢 最新公告与版本特性 / Announcements & What's New
+
+### 1. 🌓 全新上线：深色 / 白天双主题一键切换 (Dark & Light Theme Mode)
+* **原生 Apple 双主题美学**：卡片顶部新增独立主题切换按钮。
+  * 🌙 **夜间深色模式 (Dark Liquid Glass)**：深灰半透磨砂玻璃，高对比度荧光蓝/翠绿文本，暗光环境下温润不刺眼。
+  * ☀️ **白天模式 (Light Frosted Snow)**：纯净白透磨砂材质，搭配 Apple 经典曜石黑排版与深邃蓝重点标注，白天办公清晰赏目。
+* **即时无感渲染**：单次点击毫秒级动态重绘，无需重启应用，完美适配各类桌面壁纸与使用光线。
+
+### 2. 🌍 多语种拓展支持路线图 (Multi-Language Expansion Roadmap)
+* 当前版本深耕打磨**「中文 ➔ 英文」**的核心高频微学习场景。
+* **后续版本将正式引入多语种矩阵支持**：
+  * 🇯🇵 **日语** (Japanese) - 假名与汉字对照、高频句尾语气词拆解
+  * 🇰🇷 **韩语** (Korean) - 敬语搭配与韩语地道口语
+  * 🇫🇷 **法语** (French) - 变位提示与经典欧标词汇
+  * 🇩🇪 **德语** (German) - 复合词拆分与冠词辨析
+  * 🇪🇸 **西班牙语** (Spanish) - 动词搭配与拉美/欧洲常用表达
+* 保持“不打扰、零负担、即装即用”的设计哲学，打造全场景桌面多语种影子自学引擎。
 
 ---
 
@@ -21,8 +47,8 @@
 | :--- | :--- |
 | ❌ **必须打开单独输入框**，逼你在小窗里打字 | ✅ **完全不改打字习惯**，微信/网页/Word 照常敲字发中文 |
 | ❌ 目的为了“**把英文发给老外**”（沟通工具） | ✅ 纯粹为了“**自己看一眼学一句**”（自学提升伴侣） |
-| ❌ 只有生硬机械整句直译，无法学习词汇 | ✅ **自动拆解核心生词、地道搭配与音标，支持单词点读** |
-| ❌ 臃肿且缺乏美感，破坏桌面审美 | ✅ **原生 Apple 液态磨砂玻璃美学，可一键折叠为灵动岛** |
+| ❌ 只有生硬机械整句直译，无法学习词汇 | ✅ **自动拆解核心生词、地道搭配与音标，支持单词独立点读** |
+| ❌ 臃肿且缺乏美感，破坏桌面审美 | ✅ **原生 Apple 液态磨砂玻璃美学，支持深浅双主题与灵动岛折叠** |
 
 ---
 
@@ -30,14 +56,14 @@
 
 ### 1. 敲字即学，润物无声 (Incidental Learning on the Fly)
 * **🇨🇳 中文**：你依然用习惯的输入法在微信聊天、发邮件、写随笔、刷论坛，发出去的依然是正常的中文；
-* **🇬🇧 英文**：在你敲完停顿或按下 <kbd>Enter</kbd> 发送的瞬间，屏幕边缘的小卡片如同传小老师一般，静默呈现实时地道英文翻译，用眼角余光即可完成一次高效学习。
+* **🇬🇧 英文**：在你敲完停顿或按下 <kbd>Enter</kbd> 发送的瞬间，屏幕边缘的小卡片如同传小纸条的老师一般，静默呈现实时地道英文翻译，用眼角余光即可完成一次高效学习。
 
 ### 2. 原生 Apple 视觉工艺 (Native Apple & macOS Aesthetic)
 * **经典三色红绿灯交互 (macOS Traffic Lights)**：
   * 🔴 **红灯**：悬停显现 `×`，优雅关闭；
   * 🟡 **黄灯**：悬停显现 `–`，**一键折叠为苹果灵动岛微型药丸胶囊（Dynamic Island Pill）**；
   * 🟢 **绿灯**：悬停显现 `+`，快速开关自动发音。
-* **液态深色磨砂玻璃 (Liquid Glassmorphism)**：高透暗色半透明质感，搭配 22px 原生超椭圆（Squircle）圆角与 1px 微反光边缘高光，并自带柔和环境阴影。
+* **深色/白天双主题切换**：支持深邃液态磨砂与日光晶透磨砂随心切换。
 * **Windows 完美矢量排版**：内置 `Segoe UI` + `微软雅黑 UI` 严谨字体回退链，彻底杜绝任何方块字（□）与乱码。
 
 ### 3. 生词搭配拆解与点读 (Vocabulary Extraction & Click-to-Speak)
@@ -50,22 +76,22 @@
 
 ---
 
-## 🖥️ 功能展示 / Feature Highlights
+## 🖥️ 功能展示 / UI Layout
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│  🔴  🟡  🟢   英语影子伴侣   ● 正在监听       [ 自动发音: 关 ] │
-├───────────────────────────────────────────────────────────┤
-│                                                           │
-│  今天下班要不要一起去吃火锅？                                  │
-│                                                           │
-│  Shall we go grab hot pot together after work?   [ 朗读 ] │
-│                                                  [ 复制 ] │
-│  KEY EXPRESSIONS · 核心词汇                                │
-│  [ grab · 吃/抓取 ]  [ hot pot · 火锅 ]  [ together · 一起 ]  │
-│                                                           │
-│  可任意拖拽 · 连按两次 Ctrl 或按 F8 学习当前句                  │
-└───────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│  🔴  🟡  🟢   英语影子伴侣   ● 正在监听    [ ☀️ 浅色 ]  [ 自动发音: 关 ]   │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                        │
+│  今天下班要不要一起去吃火锅？                                               │
+│                                                                        │
+│  Shall we go grab hot pot together after work?                [ 朗读 ] │
+│                                                               [ 复制 ] │
+│  KEY EXPRESSIONS · 核心词汇                                             │
+│  [ grab · 吃/抓取 ]  [ hot pot · 火锅 ]  [ together · 一起 ]               │
+│                                                                        │
+│  可任意拖拽 · 连按两次 Ctrl 或按 F8 学习当前句                               │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -74,6 +100,7 @@
 
 | 操作 / Action | 方式 / Method | 说明 / Description |
 | :--- | :--- | :--- |
+| **主题切换** / Theme Switch | 点击顶部 `[☀️ 浅色]` / `[🌙 深色]` | 毫秒级无感切换夜间深色与白天晶透双主题 |
 | **拖拽悬停** / Drag | 鼠标按住顶部拖动 | 任意安放在屏幕最舒适的角落，位置自动永久记忆 |
 | **灵动岛折叠** / Collapse | 点击黄色红绿灯 `–` | 缩成极简微型胶囊，有新打字输入时自动展开 |
 | **整句听读** / Listen | 点击 `[朗读]` 按钮 | 播放当前句子的纯正英文朗读发音 |
@@ -113,7 +140,7 @@ python main.py
 ```
 EnglishShadowCompanion/
 ├── main.py          # 核心总控，调度监听线程、UI 渲染与翻译异步线程
-├── ui.py            # 原生 Apple 风格 PyQt6 悬浮卡片与动效系统
+├── ui.py            # 原生 Apple 风格 PyQt6 悬浮卡片、动效系统与双主题切换
 ├── monitor.py       # 智能输入监听引擎 (UIAutomation + Enter键拦截 + 剪贴板)
 ├── translator.py    # 高速流式翻译与重点词汇/搭配批量提炼模块
 ├── speech.py        # 异步非阻塞 Windows SAPI 原生语音朗读模块
