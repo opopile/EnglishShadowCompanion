@@ -1,4 +1,4 @@
-# 🎧 英语影子伴侣 · English Shadow Companion
+# 🎧 打字学习英语 · English Shadow Companion
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" />
